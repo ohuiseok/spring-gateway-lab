@@ -9,6 +9,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RouteConfig {
 
+    private static final String USER_SERVICE_ROUTE_ID = "user-service-route";
+    private static final String USER_SERVICE_PATH = "/users/**";
+
     private final String userServiceUrl;
 
     public RouteConfig(@Value("${routes.user-service.url:http://localhost:8081}") String userServiceUrl) {
@@ -18,8 +21,8 @@ public class RouteConfig {
     @Bean
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
         return builder.routes()
-                .route("user-service-route", route -> route
-                        .path("/users/**")
+                .route(USER_SERVICE_ROUTE_ID, route -> route
+                        .path(USER_SERVICE_PATH)
                         .uri(userServiceUrl))
                 .build();
     }

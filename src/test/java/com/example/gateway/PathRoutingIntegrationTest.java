@@ -25,23 +25,24 @@ import org.wiremock.spring.InjectWireMock;
 )
 class PathRoutingIntegrationTest {
 
-    private WebTestClient webTestClient;
-
     @LocalServerPort
     private int port;
 
     @InjectWireMock("user-service")
     private WireMockServer userServiceMock;
 
+    private WebTestClient webTestClient;
+
     @BeforeEach
     void setUp() {
         webTestClient = WebTestClient.bindToServer()
                 .baseUrl("http://localhost:" + port)
                 .build();
+        userServiceMock.resetAll();
     }
 
     @Test
-    @DisplayName("Path /users/** requests are routed to user-service")
+    @DisplayName("Path /users/** 요청은 user-service 로 그대로 전달된다")
     void route_usersPath_forwardsToUserService() {
         userServiceMock.stubFor(get(urlPathEqualTo("/users/1"))
                 .willReturn(aResponse()
@@ -59,5 +60,16 @@ class PathRoutingIntegrationTest {
                 .jsonPath("$.name").isEqualTo("Hong Gil Dong");
 
         userServiceMock.verify(getRequestedFor(urlPathEqualTo("/users/1")));
+    }
+
+    @Test
+    @DisplayName("/users 로 시작하지 않는 경로는 user-service 로 전달되지 않는다")
+    void route_nonMatchingPath_isNotForwarded() {
+        webTestClient.get()
+                .uri("/products/1")
+                .exchange()
+                .expectStatus().isNotFound();
+
+        userServiceMock.verify(0, getRequestedFor(urlPathEqualTo("/products/1")));
     }
 }
