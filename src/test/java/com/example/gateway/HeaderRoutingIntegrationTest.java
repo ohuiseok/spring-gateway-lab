@@ -116,4 +116,27 @@ class HeaderRoutingIntegrationTest {
         userServiceMock.verify(getRequestedFor(urlPathEqualTo("/users/1")));
         userServiceV2Mock.verify(0, getRequestedFor(urlPathEqualTo("/users/1")));
     }
+
+    @Test
+    @DisplayName("X-Version 헤더 값이 대문자 V2 이면 v2 라우트에 매칭되지 않고 기본 user-service 로 라우팅된다")
+    void route_versionHeaderIsUpperCaseV2_forwardsToDefaultUserService() {
+        userServiceMock.stubFor(get(urlPathEqualTo("/users/1"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("{\"id\":1,\"version\":\"v1\"}")));
+
+        webTestClient.get()
+                .uri("/users/1")
+                .header("X-Version", "V2")
+                .exchange()
+                .expectStatus().isOk()
+                .expectHeader().contentType("application/json")
+                .expectBody()
+                .jsonPath("$.id").isEqualTo(1)
+                .jsonPath("$.version").isEqualTo("v1");
+
+        userServiceMock.verify(getRequestedFor(urlPathEqualTo("/users/1")));
+        userServiceV2Mock.verify(0, getRequestedFor(urlPathEqualTo("/users/1")));
+    }
 }
