@@ -11,7 +11,11 @@ public class RouteConfig {
 
     private static final String USER_SERVICE_ROUTE_ID = "user-service-route";
     private static final String USER_SERVICE_V2_ROUTE_ID = "user-service-v2-route";
+    private static final String USER_SERVICE_API_ROUTE_ID = "user-service-api-route";
     private static final String USER_SERVICE_PATH = "/users/**";
+    private static final String USER_SERVICE_API_PATH = "/api/users/**";
+    private static final String API_USERS_REWRITE_REGEX = "/api/(?<remaining>.*)";
+    private static final String API_USERS_REWRITE_REPLACEMENT = "/${remaining}";
     private static final String VERSION_HEADER_NAME = "X-Version";
     // header(name, regex) 의 두 번째 인자는 String.matches() 기반 정규식이며 전체 매칭으로 동작한다.
     // 의도가 "v2 정확 일치"임을 명시하기 위해 ^...$ 앵커를 붙인다.
@@ -36,6 +40,12 @@ public class RouteConfig {
                         .and()
                         .header(VERSION_HEADER_NAME, VERSION_V2_HEADER_REGEX)
                         .uri(userServiceV2Url))
+                .route(USER_SERVICE_API_ROUTE_ID, route -> route
+                        .path(USER_SERVICE_API_PATH)
+                        .filters(filters -> filters.rewritePath(
+                                API_USERS_REWRITE_REGEX,
+                                API_USERS_REWRITE_REPLACEMENT))
+                        .uri(userServiceUrl))
                 .route(USER_SERVICE_ROUTE_ID, route -> route
                         .path(USER_SERVICE_PATH)
                         .uri(userServiceUrl))
