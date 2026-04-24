@@ -10,8 +10,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.test.web.reactive.server.WebTestClient;
 import org.wiremock.spring.ConfigureWireMock;
 import org.wiremock.spring.EnableWireMock;
 import org.wiremock.spring.InjectWireMock;
@@ -23,21 +21,13 @@ import org.wiremock.spring.InjectWireMock;
                 baseUrlProperties = "routes.user-service.url"
         )
 )
-class PathRoutingIntegrationTest {
-
-    @LocalServerPort
-    private int port;
+class PathRoutingIntegrationTest extends AbstractGatewayIntegrationTest {
 
     @InjectWireMock("user-service")
     private WireMockServer userServiceMock;
 
-    private WebTestClient webTestClient;
-
     @BeforeEach
-    void setUp() {
-        webTestClient = WebTestClient.bindToServer()
-                .baseUrl("http://localhost:" + port)
-                .build();
+    void resetWireMock() {
         userServiceMock.resetAll();
     }
 
